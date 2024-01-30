@@ -14,6 +14,7 @@ func TestLogin(t *testing.T) {
 	if err := bot.Login(); err != nil {
 		t.Error(err)
 	}
+	select {}
 }
 
 func TestLogout(t *testing.T) {
