@@ -815,7 +815,7 @@ func (m *Message) IsComeFromGroup() bool {
 }
 
 func (m *Message) String() string {
-	return fmt.Sprintf("<%s:%s>", m.MsgType, m.MsgId)
+	return fmt.Sprintf("<From:[%s]-->To:[%s], %s:%s>", m.FromUserName, m.ToUserName, m.MsgType, m.MsgId)
 }
 
 // IsAt 判断消息是否为@消息
