@@ -68,7 +68,6 @@ func initCmdFunc() {
 				} else if msg.IsSendByGroup() {
 					fmt.Println("群聊信息")
 				}
-
 			} else {
 				fmt.Println("不支持的消息类型:", msg.String())
 			}
@@ -88,7 +87,6 @@ func initCmdFunc() {
 			fmt.Println(err)
 			return
 		}
-		
 		// 获取所有的好友
 		friends, err := self.Friends()
 		fmt.Println(friends, err)

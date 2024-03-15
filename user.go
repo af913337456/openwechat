@@ -421,6 +421,9 @@ func (s *Self) sendFileToUser(username string, file io.Reader) (*SentMessage, er
 }
 
 // SendTextToFriend 发送文本消息给好友
+func (s *Self) SendTextToUser(username, text string) (*SentMessage, error) {
+	return s.sendTextToUser(username, text)
+}
 func (s *Self) SendTextToFriend(friend *Friend, text string) (*SentMessage, error) {
 	return s.sendTextToUser(friend.User.UserName, text)
 }
