@@ -1,10 +1,8 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"github.com/eatmoreapple/openwechat"
-	"github.com/eatmoreapple/openwechat/xrobot"
 	"github.com/manifoldco/promptui"
 	"os"
 )
@@ -39,30 +37,12 @@ func firstSelector() {
 }
 
 var (
-	xbot        *xrobot.XRobot
 	xbotAccount = ""
 )
 
 func initCmdFunc() {
 	if cmdFunc == nil {
 		cmdFunc = CmdFunc{}
-	}
-	cmdFunc["登录机器人账号"] = func() {
-		if account := inputXBotAccount("输入机器人账号"); account == "" {
-			return
-		} else {
-			xbotAccount = account
-			if password := inputXBotPassword("输入机器人密码"); password == "" {
-				return
-			}
-			// login
-			xbot = xrobot.NewXRobot()
-			if err := xbot.Login(account); err != nil {
-				fmt.Println("机器人登录失败:", err.Error())
-			} else if loginRet, ok := xbot.LoginRetMap.Load(account); loginRet != nil && ok {
-				fmt.Println("机器人登录成功")
-			}
-		}
 	}
 	cmdFunc["登录微信"] = func() {
 		bot := openwechat.DefaultBot(openwechat.Desktop) // 桌面模式
@@ -73,7 +53,7 @@ func initCmdFunc() {
 					_, _ = msg.ReplyText("pong")
 					return
 				}
-				fmt.Println("文字消息内容:", msg.Content)
+				fmt.Println("用户发来文字消息内容:", msg.Content)
 				if msg.IsSendBySelf() {
 					fmt.Println("自己发的消息不回复")
 					return
@@ -82,33 +62,13 @@ func initCmdFunc() {
 					fmt.Println("非好友消息 也 非群组消息，不回复")
 					return
 				}
-				if xbot == nil {
-					fmt.Println("没登录机器人，不自动回复")
-					return
-				}
 				fmt.Println("准备请求回复内容...")
-				if err := xbot.RequestMsg(xrobot.RequestMsgParam{
-					BotAccount: xbotAccount,
-					SenderId:   msg.Owner().UserName, // 这里是发送者
-					ReceiverId: msg.FromUserName,
-					ContentTxt: msg.Content,
-					MsgType:    "text",
-				}, "desktop-wx", func(data string) {
-					fmt.Println("日志:", data)
-				}, func(xbotMsg *xrobot.XRobotMsg) {
-					fmt.Println("准备微信自动回复...")
-					if xbotMsg.MsgType == "text" {
-						if _, err := msg.ReplyText(xbotMsg.Content); err != nil {
-							fmt.Println("msg.ReplyText 失败:", err.Error())
-						} else {
-							fmt.Println("微信自动回复成功")
-						}
-						return
-					}
-					fmt.Println("不回复非文本内容!", xbotMsg.MsgType)
-				}); err != nil {
-					fmt.Println("自动回复失败:", err.Error())
+				if msg.IsSendByFriend() {
+					fmt.Println("私聊信息")
+				} else if msg.IsSendByGroup() {
+					fmt.Println("群聊信息")
 				}
+
 			} else {
 				fmt.Println("不支持的消息类型:", msg.String())
 			}
@@ -128,7 +88,7 @@ func initCmdFunc() {
 			fmt.Println(err)
 			return
 		}
-
+		
 		// 获取所有的好友
 		friends, err := self.Friends()
 		fmt.Println(friends, err)
@@ -143,46 +103,6 @@ func initCmdFunc() {
 	cmdFunc["退出"] = func() {
 		os.Exit(1)
 	}
-}
-
-func inputXBotAccount(tips string) string {
-	var result = ""
-	validate := func(input string) error {
-		if input == "" {
-			return errors.New(fmt.Sprintf("机器人账号不能为空"))
-		}
-		result = input
-		return nil
-	}
-	prompt := promptui.Prompt{
-		Label:    tips,
-		Validate: validate,
-	}
-	if _, err := prompt.Run(); err != nil {
-		fmt.Printf("%v\n", err)
-		return ""
-	}
-	return result
-}
-
-func inputXBotPassword(tips string) string {
-	var result = ""
-	validate := func(input string) error {
-		if input == "" {
-			return errors.New(fmt.Sprintf("机器人密码不能为空"))
-		}
-		result = input
-		return nil
-	}
-	prompt := promptui.Prompt{
-		Label:    tips,
-		Validate: validate,
-	}
-	if _, err := prompt.Run(); err != nil {
-		fmt.Printf("%v\n", err)
-		return ""
-	}
-	return result
 }
 
 func secondSelector() {
